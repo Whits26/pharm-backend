@@ -63,5 +63,6 @@ def initDB():
     print('products loaded!')
 
 if __name__ == "__main__":
+    app.debug = True
     manager.run()
 
