@@ -13,7 +13,24 @@ class Product(db.Model):
     total_retail_price = db.Column(db.Float(decimal_return_scale=2), nullable=False)
     image = db.Column(db.String(300), nullable=True)
     orders = db.relationship("ProductOrder", back_populates="product")
-    
+
+    def __init__(self, code, product_name, category, supplier_cost_price, supplier, QoH, stock_unit, unit_retail_price, total_retail_price, image):
+        self.code = code
+        self.product_name = product_name
+        self.category = category
+        self.supplier_cost_price = supplier_cost_price
+        self.supplier = supplier   
+        self.QoH = QoH
+        self.stock_unit = stock_unit
+        self.unit_retail_price = unit_retail_price
+        self.total_retail_price = total_retail_price
+        self.image = image
+
+    def __repr__(self):
+        return f"{self.code}"
+
+
+
     def setPrice(self, price):
         self.unit_retail_price = price
 
