@@ -1,16 +1,109 @@
-from flask import redirect, render_template, request, session, url_for
+from flask import Flask, redirect, jsonify, render_template, request, session, url_for
 
 from App.models import Product
 from App.models.database import db
 from App import parse
 
+from App.models import order
+
+# COMMENTED OUT THIS CODE BECAUSE THERE IS NOW CODE TO CREATE A PRODUCT
+
 #creates a new product for /create-product endpoint
-def create_product(code, name, category, supplier_price, supplier, qoh, stock, unit_price, total, image = None):
-    newProd = Product(code = code, product_name = name, category = category, supplier_cost_price = supplier_price, supplier = supplier, QoH = qoh, stock_unit = stock, unit_retail_price = unit_price, total_retail_price = total)
-    db.session.add(newProd)
-    db.session.commit()
+#def create_product(code, name, category, supplier_price, supplier, qoh, stock, unit_price, total, image = None):
+    #newProd = Product(code = code, product_name = name, category = category, supplier_cost_price = supplier_price, supplier = supplier, QoH = qoh, stock_unit = stock, unit_retail_price = unit_price, total_retail_price = total)
+    #db.session.add(newProd)
+    #db.session.commit()
     #print("Successfully added")
-    return newProd
+    #return newProd
+
+# CREATE A NEW PRODUCT 
+def productInput():
+        post_data = request.get_json()
+
+        code = post_data.get('code')
+        product_name = post_data.get('product_name')
+        category = post_data.get('category')
+        supplier_cost_price = post_data.get('supplier_cost_price')
+        supplier = post_data.get('supplier')
+        QoH = post_data.get('QoH')
+        stock_unit = post_data.get('stock_unit')
+        unit_retail_price = post_data.get('unit_retail_price')
+        total_retail_price = post_data.get('total_retail_price')
+        image = post_data.get('image')
+
+        reg = Product(code, product_name, category, supplier_cost_price, supplier, QoH, stock_unit, unit_retail_price, total_retail_price, image)
+
+        db.session.add(reg)
+        db.session.commit()
+
+# GET ALL PRODUCTS 
+def productAll():
+        all_products = db.session.query(Product.id,
+                                        Product.code, 
+                                        Product.product_name, 
+                                        Product.category, 
+                                        Product.supplier_cost_price, 
+                                        Product.supplier, 
+                                        Product.QoH, 
+                                        Product.stock_unit, 
+                                        Product.unit_retail_price, 
+                                        Product.total_retail_price, 
+                                        Product.image).all()
+        return all_products
+    
+# GET 1 PRODUCT FROM ALL
+def productSingle(id):
+    single_product = db.session.query(Product.id,
+                                      Product.code, 
+                                      Product.product_name, 
+                                      Product.category, 
+                                      Product.supplier_cost_price, 
+                                      Product.supplier, 
+                                      Product.QoH, 
+                                      Product.stock_unit, 
+                                      Product.unit_retail_price, 
+                                      Product.total_retail_price, 
+                                      Product.image).filter(Product.id == id).first()
+    return single_product
+
+# UPDATE EACH PRODUCT RECORD BY ID
+def productUpdate(id):
+        put_data = request.get_json()
+
+        code = put_data.get('code')
+        product_name = put_data.get('product_name')
+        category = put_data.get('category')
+        supplier_cost_price = put_data.get('supplier_cost_price')
+        supplier = put_data.get('supplier')
+        QoH = put_data.get('QoH')
+        stock_unit = put_data.get('stock_unit')
+        unit_retail_price = put_data.get('unit_retail_price')
+        total_retail_price = put_data.get('total_retail_price')
+        image = put_data.get('image')
+
+        record = db.session.query(Product).get(id)
+
+        record.code = code
+        record.product_name = product_name
+        record.category = category
+        record.supplier_cost_price = supplier_cost_price
+        record.supplier = supplier
+        record.QoH = QoH
+        record.stock_unit = stock_unit
+        record.unit_retail_price = unit_retail_price
+        record.total_retail_price = total_retail_price
+        record.image = image
+
+        db.session.commit()
+        
+
+
+# DELETE PRODUCT BY ID
+def productDelete(id):
+    record = db.session.query(Product).get(id)
+    db.session.delete(record)
+    db.session.commit()
+    return 'Deleted'
 
 # calls the parse.py view method to parse the given excel products file
 def parse_excel():
@@ -29,6 +122,7 @@ def parse_excel():
     else:
         print('No products parsed')
         return 0
+
 
 # gets 20 products (pagination) per page
 ROWS_PER_PAGE = 20
@@ -81,6 +175,7 @@ def delete_products():
     print('Rows deleted: ',x)
     return 0
 
+
 #search through products; used in /search endpoint
 def get_products_by_term(term):
     list_of_products = []
@@ -114,3 +209,4 @@ def delete_product_by_slug(p_slug):
         db.session.commit()
         return True
     return False
+
