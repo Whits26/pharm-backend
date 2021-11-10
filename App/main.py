@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, flash, request, redirect, jsonify, url_for
 from flask_jwt import JWT
 from flask import session
 from datetime import timedelta 
@@ -60,6 +60,11 @@ def create_app():
     app.config['SECRET_KEY'] = CONFIG['SECRET_KEY']
     app.config['JWT_EXPIRATION_DELTA'] = timedelta(days=CONFIG["JWT_EXPIRATION_DELTA"])
     app.config['DEBUG'] = CONFIG["DEBUG"]
+
+    UPLOAD_FOLDER = 'static/uploads'
+    ALLOWED_EXTENSIONS = {'png' , 'jpg' , 'jpeg' , 'gif', 'txt', 'pdf'}
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
     #photos = UploadSet('photos', TEXT + DOCUMENTS + IMAGES)
     #configure_uploads(app, photos)
     db.init_app(app)
