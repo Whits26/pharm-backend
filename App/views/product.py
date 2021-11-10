@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, Flask
+from flask import Blueprint, request, jsonify, Flask, flash, redirect, url_for
 from flask_jwt import jwt_required
 
 from App.models import Product
@@ -8,6 +8,7 @@ from sqlalchemy import exc
 from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
+import os
 
 product_views = Blueprint('product_views', __name__, template_folder='../templates')
 
@@ -129,30 +130,28 @@ def pDelete(id):
     return jsonify(Drecord)
 
 
-# IMAGE
-#app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-#ALLOWED_EXTENSIONS = set(['png' , 'jpg' , 'jpeg' , 'gif'])
-#def allowed_file(filename):
-    #return '.' in filename and filename.rsplit('.' , 1)[1].lower() in ALLOWED_EXTENSIONS
+# IMAGE WAS NOT IMPLEMENTED, CODE NEEDS TO BE REFACTORED BY ABSTRACTION INTO CORRECT ARCHITECTURE
+def allowed_file(filename):
+    return '.' in filename and \
+    filename.rsplit('.' , 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@product_views.route('/upload', methods=['GET','POST'])
+def upload_file():
+    if 'file' not in request.files:
+        flash ('No File Path')
+        return redirect(request.url)
+    file = request.files['file']
 
-#@product_views.route('/upload', methods=["POST"])
-#def upload_image():
-    #if 'file' not in request.files:
-        #flash ('No File Path')
-        #return redirect(request.url)
-    #file = request.files['file']
-    #if file.filename == '':
-        #flash('No image selected for upload')
-        #return redirect(request.url)
-    #if file and allowed_file(file.filename):
-        #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        ##print('upload_image filename: '+ filename)
-        #flash('Image Uploaded Successfully')
-        #return render_template('index.html', filename=filename)
-    #else:
-        #flash('Allowed Images are png, jpg, jpeg, gif')
-        #return redirect(request.url)
+    # If the user does not select a file, the browser submits an
+    # empty file without a filename.
 
+    if file.filename == '':
+        flash('No image selected for upload')
+        return redirect(request.url)
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        return redirect(url_for('download_file', name=filename))
+    return
                               
 
